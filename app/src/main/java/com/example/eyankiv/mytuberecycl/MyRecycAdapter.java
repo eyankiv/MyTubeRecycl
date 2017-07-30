@@ -21,12 +21,12 @@ import java.util.Map;
  * Created by eyankiv on 28-Jul-17.
  */
 
-public class MyRecycAdapter extends RecyclerView.Adapter {
+public class MyRecycAdapter extends RecyclerView.Adapter<MyRecycAdapter.TubeVideoViewHolder> {
 
     public static final String DEVELOPER_KEY = "AIzaSyAcTTf9dmb1D-AqJ41Y9KcCEnWANrSr1Po";
     private static final String initialErrorTAG = "initError";
     public static final String TAG = MyRecycAdapter.class.getSimpleName();
-    private int mNumberItems;
+    private int mTubeItems;
     Activity activity;
     private final List<YouTubeItem> vodList;
     private final Map<YouTubeThumbnailView, YouTubeThumbnailLoader> thumbViewToLoaderMap;
@@ -42,6 +42,11 @@ public class MyRecycAdapter extends RecyclerView.Adapter {
     }
 
 
+    public void releaseLoaders(){
+        for (YouTubeThumbnailLoader loader : thumbViewToLoaderMap.values()) {
+            loader.release();
+        }
+    }
     @Override
     public TubeVideoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
@@ -56,7 +61,7 @@ public class MyRecycAdapter extends RecyclerView.Adapter {
     }
 
     @Override
-    public void onBindViewHolder(VIew holder, int position) {
+    public void onBindViewHolder(TubeVideoViewHolder holder, int position) {
         Log.d(TAG, "#" + position);
         holder.bind(position);
     }
@@ -64,11 +69,12 @@ public class MyRecycAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemCount() {
-        return 0;
+        return mTubeItems;
     }
 
     class TubeVideoViewHolder extends RecyclerView.ViewHolder{
         TextView listItemTubeView;
+        YouTubeThumbnailView tubeThumbnailView;
 
         public TubeVideoViewHolder(View itemView) {
             super(itemView);
