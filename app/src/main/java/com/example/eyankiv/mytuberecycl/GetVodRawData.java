@@ -7,6 +7,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -34,6 +36,7 @@ public class GetVodRawData extends GetRawData {
     private URL jsonLinkUrl;
     private List<YouTubeItem> mVodItems;
     private HashMap<String, List<YouTubeItem>> mVodList;
+    private downloadJsonListenr jsonListenr;
     private Handler handler = new Handler();
     private Runnable postDataPull;
 
@@ -53,8 +56,13 @@ public class GetVodRawData extends GetRawData {
     }
 
 
+
     public List<YouTubeItem> getmVodItems() {
         return mVodItems;
+    }
+
+    public void setDataDownloadListener(downloadJsonListenr listener) {
+        this.jsonListenr = listener;
     }
 
     public HashMap<String, List<YouTubeItem>> getmVodList() {
@@ -68,6 +76,7 @@ public class GetVodRawData extends GetRawData {
         downloadJsonData.execute(jsonLinkUrl.toString());
     }
 
+
     public void proccessRowData() {
         if (getmDownloadingStatus() != DownloadingStatus.OK) {
             Log.e(LOG_TAG, "error downloading raw file");
@@ -76,6 +85,7 @@ public class GetVodRawData extends GetRawData {
 
         try {
             JSONObject jsonData = new JSONObject(getmData());
+
             JSONArray jsonVODplaylist = jsonData.getJSONArray(PLAYLIST_ARR_ITEM);
             for (int i = 0; i < jsonVODplaylist.length(); i++) {
                 JSONArray jsonVODlistItems = jsonVODplaylist.getJSONObject(i).getJSONArray(LIST_ARR_VOD_ITEM);///****review
@@ -114,6 +124,10 @@ public class GetVodRawData extends GetRawData {
         protected String doInBackground(String... params) {
             return super.doInBackground(params);
         }
+    }
+
+    public interface downloadJsonListenr{
+        void onDataDownloaded(String listData);
     }
 }
 

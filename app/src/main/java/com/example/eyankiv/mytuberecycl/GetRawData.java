@@ -1,14 +1,21 @@
 package com.example.eyankiv.mytuberecycl;
 
 import android.os.AsyncTask;
+import android.util.JsonReader;
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 
 /**
  * Created by yevgeni on 24/02/2017.
@@ -30,6 +37,25 @@ public class GetRawData {
         this.mRawUrl = mRawUrl;
         this.mDownloadingStatus = DownloadingStatus.IDLE;
     }
+    /*public GetRawData(File jsonFileName){
+        File jsonTxtFile = jsonFileName;
+        if (jsonFileName.length() == 0) {
+            try {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    String jsonTxt = new String(Files.readAllBytes(Paths.get("TubeListJson.json")));
+                    mData = jsonTxt;
+                }else {
+                    System.out.println("file supports java 7 or higher");
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }*/
+
+
 
     public void setmRawUrl(String mRawUrl) {
         this.mRawUrl = mRawUrl;
