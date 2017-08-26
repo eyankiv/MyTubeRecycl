@@ -7,6 +7,8 @@ import android.app.FragmentManager;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -25,10 +27,15 @@ import java.util.List;
 
 public class MainActivity extends YouTubeBaseActivity implements YouTubePlayer.OnFullscreenListener{
 
-    public static final String RAW_URL = "http://www.razor-tech.co.il/hiring/youtube-api.json";
+    private MyRecycAdapter mRecycAdapter;
+    private RecyclerView mVodRecycList;
+    public static final int TUBE_LIST_ITEMS = 200;
+    Toast mToast;
     public static final int RECOVERY_DIALOG_REQUEST = 123;
-    ListView vodListView;
-    MyAdapter myAdapter;
+
+    public static final String RAW_URL = "http://www.razor-tech.co.il/hiring/youtube-api.json";
+//        ListView vodListView;
+//       MyAdapter myAdapter;
     HashMap<String, String> vodItemList = new HashMap<>();
     List<YouTubeItem> tubeVodItems;
     //GetRawData getRawData;
@@ -49,40 +56,23 @@ public class MainActivity extends YouTubeBaseActivity implements YouTubePlayer.O
         //getRawData = new GetRawData(RAW_URL);
         //getRawData.execute();
 
-        getVodRowData = new GetVodRawData(RAW_URL);
-        vodListView = (ListView) findViewById(R.id.vodList);
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                myAdapter = new MyAdapter(MainActivity.this, tubeVodItems);
-                vodListView.setAdapter(myAdapter);
-                vodListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        //YouTubePlayerFragment youTubePlayerFragment = (YouTubePlayerFragment)getFragmentManager().findFragmentById(R.id.tubeFragLbl);
-                        tubeVideoId= tubeVodItems.get(position).getmLink().substring(32);
-                        startActivity(YouTubeStandalonePlayer.createVideoIntent(MainActivity.this,myAdapter.DEVELOPER_KEY,tubeVideoId,0,true,true));
-
-//                        youTubePlayerFragment.initialize(myAdapter.DEVELOPER_KEY, new YouTubePlayer.OnInitializedListener() {
-//                            @Override
-//                            public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer youTubePlayer, boolean b) {
-//                                youTubePlayer.cueVideo(tubeVideoId);
-//                            }
-//
-//                            @Override
-//                            public void onInitializationFailure(YouTubePlayer.Provider provider, YouTubeInitializationResult youTubeInitializationResult) {
-//                                Toast.makeText(MainActivity.this, "Your video Failed due to : "+youTubeInitializationResult, Toast.LENGTH_SHORT).show();
-//                            }
-//                        });
-                    }
-                });
-            }
-        };
-        //we get the data before we execute.
-        getVodRowData.setPostDataPull(r);
-        getVodRowData.execute();
+        getVodRowData = new GetVodRawData(RAW_URL,getAssets());
+        getVodRowData.proccessRowData();
+        //vodListView = (ListView) findViewById(R.id.vodList);
+        mVodRecycList = (RecyclerView)findViewById(R.id.vodList);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        mVodRecycList.setLayoutManager(layoutManager);
+        //mVodRecycList.setHasFixedSize(true);
         tubeVodItems = getVodRowData.getmVodItems();
 
+        mRecycAdapter = new MyRecycAdapter(this, tubeVodItems, new MyRecycAdapter.TubeItemClickListener() {
+            @Override
+            public void onVideoClicked(int clickedVideoIndex) {
+                tubeVideoId = tubeVodItems.get(clickedVideoIndex).getmLink().substring(32);
+                startActivity(YouTubeStandalonePlayer.createVideoIntent(MainActivity.this, MyRecycAdapter.DEVELOPER_KEY, tubeVideoId, 0, true, true));
+            }
+        });
+        mVodRecycList.setAdapter(mRecycAdapter);
 
 
         checkYoutubeApi();

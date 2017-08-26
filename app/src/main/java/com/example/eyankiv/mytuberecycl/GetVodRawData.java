@@ -1,5 +1,6 @@
 package com.example.eyankiv.mytuberecycl;
 
+import android.content.res.AssetManager;
 import android.os.Handler;
 import android.util.Log;
 
@@ -7,8 +8,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,46 +40,68 @@ public class GetVodRawData extends GetRawData {
     private HashMap<String, List<YouTubeItem>> mVodList;
     private Handler handler = new Handler();
     private Runnable postDataPull;
+    private JSONObject mJsonFileObj;
+    private StringBuilder stringBuilder;
 
     public void setPostDataPull(Runnable postDataPull) {
         this.postDataPull = postDataPull;
     }
 
-    public GetVodRawData(String mRawUrl)  {
+    public GetVodRawData(String mRawUrl, AssetManager assets) {
         super(null);
         mVodItems = new ArrayList<>();
         mVodList = new HashMap<>();
+        stringBuilder = new StringBuilder();
+        InputStream is;
         try {
-            jsonLinkUrl = new URL(mRawUrl);
-        } catch (MalformedURLException e) {
+            is = assets.open("tubeJson.json");
+            int actuallyRead;
+            byte buffer[] = new byte[1024];
+            while ((actuallyRead = is.read(buffer)) != -1) {
+                stringBuilder.append(new String(buffer, 0, actuallyRead));
+            }
+            is.close();
+            if (stringBuilder.toString().isEmpty())
+                System.out.println("json is empty");
+            mJsonFileObj = new JSONObject(stringBuilder.toString());
+        } catch (IOException e) {
             e.printStackTrace();
+        } catch (JSONException e1) {
+            e1.printStackTrace();
         }
+
+//        try {
+//            jsonLinkUrl = new URL(mRawUrl);
+//        } catch (MalformedURLException e) {
+//            e.printStackTrace();
+//        }
     }
 
 
-    public List<YouTubeItem> getmVodItems() {
+        public List<YouTubeItem> getmVodItems() {
         return mVodItems;
     }
 
     public HashMap<String, List<YouTubeItem>> getmVodList() {
         return mVodList;
     }
-
-    public void execute(){
-        super.setmRawUrl(jsonLinkUrl.toString());
-        DownloadJsonData downloadJsonData = new DownloadJsonData();
-        Log.v(LOG_TAG,"Link to Json is: "+jsonLinkUrl);
-        downloadJsonData.execute(jsonLinkUrl.toString());
-    }
+//
+//    public void execute(){
+//        super.setmRawUrl(jsonLinkUrl.toString());
+//        DownloadJsonData downloadJsonData = new DownloadJsonData();
+//        Log.v(LOG_TAG,"Link to Json is: "+jsonLinkUrl);
+//        downloadJsonData.execute(jsonLinkUrl.toString());
+//    }
 
     public void proccessRowData() {
-        if (getmDownloadingStatus() != DownloadingStatus.OK) {
-            Log.e(LOG_TAG, "error downloading raw file");
-            return;
-        }
+//        if (getmDownloadingStatus() != DownloadingStatus.OK) {
+//            Log.e(LOG_TAG, "error downloading raw file");
+//            return;
+//        }
 
         try {
-            JSONObject jsonData = new JSONObject(getmData());
+            //JSONObject jsonData = new JSONObject(getmData());
+            JSONObject jsonData = mJsonFileObj;
             JSONArray jsonVODplaylist = jsonData.getJSONArray(PLAYLIST_ARR_ITEM);
             for (int i = 0; i < jsonVODplaylist.length(); i++) {
                 JSONArray jsonVODlistItems = jsonVODplaylist.getJSONObject(i).getJSONArray(LIST_ARR_VOD_ITEM);///****review
@@ -89,7 +115,7 @@ public class GetVodRawData extends GetRawData {
                 mVodList.put(jsonVODlistItems.getString(i),mVodItems);
             }
             //here we make sure that we run the process after we get the data
-            handler.post(postDataPull);
+            //handler.post(postDataPull);
 
 
 //            for (YouTubeItem singleVodItem: mVodItems) {
